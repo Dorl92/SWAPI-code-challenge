@@ -1,17 +1,16 @@
 import React from 'react';
 
 const HomelandBars = (props) => {
-    const { planets } = props;
 
-    const filteredPlanets = (planets) => {
-        const planetsToShow = ['Tatooine', 'Alderaan', 'Naboo', 'Bespin', 'Endor'];
-        const filteredPlanets = Object.values(planets).filter(planet => planetsToShow.includes(planet.planetName))
-        return filteredPlanets;
+    const { planets, planetsToShow } = props;
+
+    const filteredPlanets = (planets, planetsToShow) => {
+        return Object.values(planets).filter(planet => planetsToShow.has(planet.planetName))
     }
 
     return (
         <div style={{ display: "flex", justifyContent: "center" }}>
-            {planets && filteredPlanets(planets).map(planet => {
+            {planets && filteredPlanets(planets, planetsToShow).map(planet => {
                 return (
                     <div key={planet.planetName} style={
                         {
@@ -27,7 +26,7 @@ const HomelandBars = (props) => {
                                 border: "1px solid black",
                                 backgroundColor: "lightgray",
                                 width: "70px",
-                                height: `${(((300 - 10) * (planet.population - 200000)) / (4500000000 - 200000)) + 10}px`
+                                height: `${(((350 - 5) * (planet.population - 200000)) / (4500000000 - 200000)) + 5}px`
                             }
                         }></div>
                         <h4>{planet.planetName}</h4>

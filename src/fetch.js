@@ -1,21 +1,6 @@
 import axios from 'axios';
 import { getId } from './utils';
-
-// export const fetchVehicles = (url) => {
-//     const vehiclesData = [];
-//     const getVehicles = async (url) => {
-//         const res = await axios.get(url)
-//         const newVehicles = res.data.results.map(vehicle => (
-//             {
-//                 name: vehicle.name,
-//                 pilotIds: vehicle.pilots.map(pilotUrl => getId(pilotUrl))
-//             }
-//         ))
-//         vehiclesData.push(...newVehicles);
-//         res.data.next ? getVehicles(res.data.next) : setVehicles(vehiclesData);
-//     }
-//     getVehicles(url)
-// }
+import { PILOTS_URL, PLANETS_URL } from './urls';
 
 export const fetchVehicles = async (url) => {
     const vehiclesData = [];
@@ -35,7 +20,7 @@ export const fetchVehicles = async (url) => {
 }
 
 export const fetchPilot = async (pilotId) => {
-    const res = await axios.get(`https://swapi.dev/api/people/${pilotId}/`)
+    const res = await axios.get(`${PILOTS_URL}${pilotId}/`)
     const newPilot = {}
     newPilot[pilotId] = {
         pilotName: res.data.name,
@@ -44,19 +29,29 @@ export const fetchPilot = async (pilotId) => {
     return newPilot;
 }
 
+const fetchPlanet = async (planetId) => {
+    const res = await axios.get(`${PLANETS_URL}${planetId}/`)
+    const newPlanet = {}
+    newPlanet[planetId] = {
+        planetName: res.data.name,
+        population: res.data.population
+    }
+    return newPlanet;
+}
+
+// Function for fetching planets data for both parts in a efficient way (Fetch only the planets needed for both parts)
+// Another way to solve this is through fetching planets for part 1 by ID like 'fetchPilot' and for part 2 separately. 
 export const fetchPlanets = async (planetsNames, planetsIds) => {
     let planetData = {};
     const tempPlanetsNames = new Set(planetsNames);
     const tempPlanetsIds = new Set(planetsIds);
-
-    let fetchUrl = 'https://swapi.dev/api/planets/';
-    while (fetchUrl && (planetsNames.size || planetsIds.size)) {
+    let fetchUrl = PLANETS_URL;
+    while (fetchUrl && tempPlanetsNames.size) {
         const res = await axios.get(fetchUrl)
-        res.data.results.map(planet => {
+        res.data.results.forEach(planet => {
             if (tempPlanetsNames.has(planet.name) || tempPlanetsIds.has(getId(planet.url))) {
                 tempPlanetsNames.delete(planet.name)
                 tempPlanetsIds.delete(getId(planet.url))
-
                 planetData = {
                     ...planetData,
                     [getId(planet.url)]:
@@ -68,9 +63,11 @@ export const fetchPlanets = async (planetsNames, planetsIds) => {
             }
         })
         fetchUrl = res.data.next;
-        console.log(res.data)
     }
-    console.log('after while loop')
+    if (tempPlanetsIds.size) {
+        const res = await Promise.all(Array.from(tempPlanetsIds).map(planetId => fetchPlanet(planetId)))
+        res.map(planet => planetData = {...planetData, ...planet})
+    }
     return planetData;
 }
 
