@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback, Fragment } from 'react';
+import React, { useState, useEffect, useMemo, Fragment } from 'react';
 import { fetchVehicles, fetchPilot, fetchPlanets } from './fetch';
 import { uniquePilots, extractHomePlanetId } from './utils';
 import HomelandBars from './HomelandBars';
